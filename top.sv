@@ -1,7 +1,10 @@
 module top 
 
     (
-        input logic clock
+        input logic clock,
+        input logic snn_ren,
+        output logic snn_event,
+        output logic [3:0] neuron_addr_out
     );
 
     parameter WIDTH = 16*16;
@@ -23,7 +26,10 @@ module top
     logic weight_pe_w_en;
     logic accum_en;
     logic [$clog2(WIDTH)-1:0] weight_ctr_raddr;
-    logic [15:0] spike_done;
+    logic spike_done;
+
+    // To the PEs
+    logic [3:0] spike_encoded;
 
     // From the PEs
     logic [15:0] spike;
@@ -42,12 +48,12 @@ module top
         .weight_w_en(weight_pe_w_en),
         .weight_addr(weight_ctr_raddr),
         .event_addr(sensor_event_addr),
+        .spike(spike),
         .accum_en(accum_en),
         .spike_done(spike_done),
         .clock(clock)
     );
-
-    logic [3:0] spike_encoded;
+    
     priority_encoder encoder (
         .i(spike),
         .y(spike_encoded)
@@ -61,10 +67,19 @@ module top
                 .accum_en(accum_en),
                 .weight_w_en(weight_pe_w_en && (weight_ctr_raddr[3:0] == i)),
                 .spike(spike[i]),
-                .spike_done(spike_done[i]&(spike_encoded==i)),
+                .spike_done(spike_done&(spike_encoded==i)),
                 .clock(clock)
             );
         end
     endgenerate
+
+    fifo out_fifo (
+        .clock(clock),
+        .wen(spike_done),
+        .ren(snn_ren),
+        .din(spike_encoded),
+        .dout(neuron_addr_out),
+        .empty(snn_event)
+    );
 
 endmodule

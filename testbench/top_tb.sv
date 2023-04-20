@@ -2,9 +2,12 @@
 module top_tb ();
 
     logic clock;
+    logic snn_ren;
+    logic snn_event;
+    logic [3:0] neuron_addr_out;
 
     top uut(
-        .clock(clock)
+        .*
     );
 
     always #1 clock = ~clock;
@@ -12,9 +15,15 @@ module top_tb ();
     initial begin
         $dumpfile("test.vcd");
         $dumpvars(0,uut);
-        clock = 0;
-        #300;
-        $display(uut.genblk1[2].pe.weight);
+        clock = 0; snn_ren = 0; #1;
+        for (int i = 0; i < 1000; i++) begin
+            snn_ren = 0;
+            if (snn_event) begin
+                snn_ren = 1;
+                $display("Neuron %d Spiked.", neuron_addr_out);
+            end
+            #2;
+        end
         $finish;
     end
 
