@@ -13,7 +13,7 @@ module top_tb ();
         $dumpfile("test.vcd");
         $dumpvars(0,uut);
         clock = 0;
-        #200;
+        #300;
         $display(uut.genblk1[2].pe.weight);
         $finish;
     end

@@ -23,6 +23,7 @@ module top
     logic weight_pe_w_en;
     logic accum_en;
     logic [$clog2(WIDTH)-1:0] weight_ctr_raddr;
+    logic [15:0] spike_done;
 
     // From the PEs
     logic [15:0] spike;
@@ -42,7 +43,14 @@ module top
         .weight_addr(weight_ctr_raddr),
         .event_addr(sensor_event_addr),
         .accum_en(accum_en),
+        .spike_done(spike_done),
         .clock(clock)
+    );
+
+    logic [3:0] spike_encoded;
+    priority_encoder encoder (
+        .i(spike),
+        .y(spike_encoded)
     );
 
     genvar i;
@@ -53,7 +61,7 @@ module top
                 .accum_en(accum_en),
                 .weight_w_en(weight_pe_w_en && (weight_ctr_raddr[3:0] == i)),
                 .spike(spike[i]),
-                .spike_done(1'b0),
+                .spike_done(spike_done[i]&(spike_encoded==i)),
                 .clock(clock)
             );
         end
