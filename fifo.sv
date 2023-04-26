@@ -15,13 +15,16 @@ module fifo
 
     initial begin
         raddr <= 0; waddr <= 0;
+        for (int i = 0; i < 16; i++) begin
+            data[i] <= 0;
+        end
     end
 
     assign dout = data[raddr];
 
-    assign empty = raddr == (waddr-1);
+    assign empty = raddr == waddr;
 
-    always_ff @(posedge clock ) begin : blockName
+    always_ff @(posedge clock ) begin
         if (wen) begin
             data[waddr] <= din;
             waddr <= waddr + 1;

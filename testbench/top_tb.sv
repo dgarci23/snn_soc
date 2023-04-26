@@ -3,7 +3,7 @@ module top_tb ();
 
     logic clock;
     logic snn_ren;
-    logic snn_event;
+    logic snn_event_n;
     logic [3:0] neuron_addr_out;
 
     top uut(
@@ -18,7 +18,7 @@ module top_tb ();
         clock = 0; snn_ren = 0; #1;
         for (int i = 0; i < 1000; i++) begin
             snn_ren = 0;
-            if (snn_event) begin
+            if (!snn_event_n) begin
                 snn_ren = 1;
                 $display("Neuron %d Spiked.", neuron_addr_out);
             end

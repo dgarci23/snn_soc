@@ -3,7 +3,7 @@ module top
     (
         input logic clock,
         input logic snn_ren,
-        output logic snn_event,
+        output logic snn_event_n,
         output logic [3:0] neuron_addr_out
     );
 
@@ -79,7 +79,7 @@ module top
         .ren(snn_ren),
         .din(spike_encoded),
         .dout(neuron_addr_out),
-        .empty(snn_event)
+        .empty(snn_event_n)
     );
 
 endmodule
