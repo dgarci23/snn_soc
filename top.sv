@@ -51,8 +51,10 @@ module top
     // Output from the membrane potential memory
     logic [DEPTH-1:0] memb_pot_mem_out;
 
+    logic [15:0][7:0] memb_pot_arr;
+
     memory #(.WIDTH(WIDTH), .DEPTH(DEPTH)) memb_pot_mem (
-        .data_in(memb_pot_mem_in),
+        .data_in(memb_pot_arr[mem_addr[3:0]]),
         .data_out(memb_pot_mem_out),
         .raddr(mem_addr),
         .waddr(mem_addr),
@@ -64,6 +66,7 @@ module top
         .event_received(sensor_event_received),
         .weight_w_en(weight_pe_w_en),
         .memb_pot_w_en(memb_pot_pe_w_en),
+        .memb_pot_mem_w_en(memb_pot_mem_w_en),
         .mem_addr(mem_addr),
         .event_addr(sensor_event_addr),
         .spike(spike),
@@ -77,6 +80,8 @@ module top
         .y(spike_encoded)
     );
 
+    
+
     genvar i;
     generate
         for (i=0; i < 16; i++) begin
@@ -88,6 +93,7 @@ module top
                 .memb_pot_w_en(memb_pot_pe_w_en && (mem_addr[3:0] == i)),
                 .spike(spike[i]),
                 .spike_done(spike_done&(spike_encoded==i)),
+                .memb_pot(memb_pot_arr[i]),
                 .clock(clock)
             );
         end

@@ -8,13 +8,14 @@ module controller
         output logic        accum_en,
         output logic        weight_w_en,
         output logic        memb_pot_w_en,
+        output logic        memb_pot_mem_w_en,
         output logic [7:0]  mem_addr,
         output logic spike_done
     );
 
     // Current and next state sequential logic
 
-    enum logic[2:0] {IDLE, WEIGHT_LOAD, ACCUM, SPIKE, CLEANUP} state, next_state;
+    enum logic[2:0] {IDLE, WEIGHT_LOAD, ACCUM, SPIKE, STORE, CLEANUP} state, next_state;
 
     always_ff @(posedge clock ) begin
         state <= next_state;
@@ -58,6 +59,7 @@ module controller
         weight_w_en = 0;
         memb_pot_w_en = 0;
         neuron_cnt_en = 0;
+        memb_pot_mem_w_en = 0;
         neuron_cnt_rst = 0;
         spike_trigger_cnt_en = 0;
         spike_trigger_cnt_rst = 0;
@@ -92,9 +94,18 @@ module controller
                 next_state = CLEANUP;
             end
             CLEANUP: begin
-                next_state = IDLE;
+                next_state = STORE;
                 if (spike != 16'h0000) begin
                     next_state = SPIKE;
+                end
+            end
+            STORE: begin
+                neuron_cnt_en = 1;
+                next_state = STORE;
+                memb_pot_mem_w_en = 1;
+                if (neuron_cnt == 4'd15) begin
+                    neuron_cnt_rst = 1;
+                    next_state = IDLE;
                 end
             end
             default: begin

@@ -10,11 +10,12 @@ module pe
         input  logic [7:0] weight_in,   // Weight Input
         input  logic [7:0] memb_pot_in,   // Membrane Potential Input
         input  logic       spike_done,
-        output logic       spike        // Spike Output
+        output logic       spike,       // Spike Output
+        output logic [7:0] memb_pot
     );
 
     logic [7:0] weight;
-    logic [7:0] memb_pot;
+    //logic [7:0] memb_pot;
 
     initial begin
         weight <= 0; memb_pot <= 0;
