@@ -7,7 +7,8 @@ module controller
         input  logic [15:0] spike,
         output logic        accum_en,
         output logic        weight_w_en,
-        output logic [7:0]  weight_addr,
+        output logic        memb_pot_w_en,
+        output logic [7:0]  mem_addr,
         output logic spike_done
     );
 
@@ -51,10 +52,11 @@ module controller
 
     // Address for weight in SRAM
 
-    assign weight_addr = {event_addr, neuron_cnt};
+    assign mem_addr = {event_addr, neuron_cnt};
 
     always_comb begin
         weight_w_en = 0;
+        memb_pot_w_en = 0;
         neuron_cnt_en = 0;
         neuron_cnt_rst = 0;
         spike_trigger_cnt_en = 0;
@@ -74,6 +76,7 @@ module controller
                 neuron_cnt_en = 1;
                 next_state = WEIGHT_LOAD;
                 weight_w_en = 1;
+                memb_pot_w_en = 1;
                 if (neuron_cnt == 4'd15) begin
                     neuron_cnt_rst = 1;
                     next_state = ACCUM;

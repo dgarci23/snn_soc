@@ -22,6 +22,7 @@ module top
     logic       sensor_event_received = 1'b1;
 
     // From the controller
+    logic memb_pot_pe_w_en;
     logic weight_pe_w_en;
     logic accum_en;
     logic [$clog2(WIDTH)-1:0] weight_ctr_raddr;
@@ -62,7 +63,8 @@ module top
     controller controller ( 
         .event_received(sensor_event_received),
         .weight_w_en(weight_pe_w_en),
-        .weight_addr(mem_addr),
+        .memb_pot_w_en(memb_pot_pe_w_en),
+        .mem_addr(mem_addr),
         .event_addr(sensor_event_addr),
         .spike(spike),
         .accum_en(accum_en),
@@ -80,8 +82,10 @@ module top
         for (i=0; i < 16; i++) begin
             pe pe (
                 .weight_in(weight_mem_out),
+                .memb_pot_in(memb_pot_mem_out),
                 .accum_en(accum_en),
                 .weight_w_en(weight_pe_w_en && (mem_addr[3:0] == i)),
+                .memb_pot_w_en(memb_pot_pe_w_en && (mem_addr[3:0] == i)),
                 .spike(spike[i]),
                 .spike_done(spike_done&(spike_encoded==i)),
                 .clock(clock)

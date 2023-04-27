@@ -5,8 +5,10 @@ module pe
     (
         input  logic       clock,
         input  logic       weight_w_en, // Weight Write Enable
+        input  logic       memb_pot_w_en,
         input  logic       accum_en,    // Accumulator Write Enable
         input  logic [7:0] weight_in,   // Weight Input
+        input  logic [7:0] memb_pot_in,   // Membrane Potential Input
         input  logic       spike_done,
         output logic       spike        // Spike Output
     );
@@ -25,6 +27,10 @@ module pe
         // Write the new weight value
         if (weight_w_en) begin
             weight <= weight_in;
+        end
+
+        if (memb_pot_w_en) begin
+            memb_pot <= memb_pot_in;
         end
 
         // Accumulate the weight
