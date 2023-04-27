@@ -11,7 +11,6 @@ module top
     parameter DEPTH = 8;
 
     // Input to the weight memory
-    logic [$clog2(WIDTH)-1:0] weight_mem_waddr;
     logic weight_mem_w_en;
     logic [DEPTH-1:0] weight_mem_in;
 
@@ -37,16 +36,33 @@ module top
     memory #(.WIDTH(WIDTH), .DEPTH(DEPTH)) weight_mem (
         .data_in(weight_mem_in),
         .data_out(weight_mem_out),
-        .raddr(weight_ctr_raddr),
-        .waddr(weight_mem_waddr),
+        .raddr(mem_addr),
+        .waddr(mem_addr),
         .w_en(weight_mem_w_en),
+        .clock(clock)
+    );
+
+    // Input to the membrane potential memory
+    logic [DEPTH-1:0] memb_pot_mem_in;
+    logic [$clog2(WIDTH)-1:0] mem_addr;
+    logic memb_pot_mem_w_en;
+
+    // Output from the membrane potential memory
+    logic [DEPTH-1:0] memb_pot_mem_out;
+
+    memory #(.WIDTH(WIDTH), .DEPTH(DEPTH)) memb_pot_mem (
+        .data_in(memb_pot_mem_in),
+        .data_out(memb_pot_mem_out),
+        .raddr(mem_addr),
+        .waddr(mem_addr),
+        .w_en(memb_pot_mem_w_en),
         .clock(clock)
     );
 
     controller controller ( 
         .event_received(sensor_event_received),
         .weight_w_en(weight_pe_w_en),
-        .weight_addr(weight_ctr_raddr),
+        .weight_addr(mem_addr),
         .event_addr(sensor_event_addr),
         .spike(spike),
         .accum_en(accum_en),
@@ -65,7 +81,7 @@ module top
             pe pe (
                 .weight_in(weight_mem_out),
                 .accum_en(accum_en),
-                .weight_w_en(weight_pe_w_en && (weight_ctr_raddr[3:0] == i)),
+                .weight_w_en(weight_pe_w_en && (mem_addr[3:0] == i)),
                 .spike(spike[i]),
                 .spike_done(spike_done&(spike_encoded==i)),
                 .clock(clock)
