@@ -17,6 +17,17 @@ module top
     // Output from the weight memory
     logic [DEPTH-1:0] weight_mem_out;
 
+    // Input to the membrane potential memory
+    logic [DEPTH-1:0] memb_pot_mem_in;
+    logic [$clog2(WIDTH)-1:0] mem_addr;
+    logic memb_pot_mem_w_en;
+
+    // Output from the membrane potential memory
+    logic [DEPTH-1:0] memb_pot_mem_out;
+
+    // Membrane Potential Array
+    logic [15:0][7:0] memb_pot_arr;
+
     // From the sensors FIFO
     logic [3:0] sensor_event_addr = 4'd1;
     logic       sensor_event_received = 1'b1;
@@ -43,15 +54,7 @@ module top
         .clock(clock)
     );
 
-    // Input to the membrane potential memory
-    logic [DEPTH-1:0] memb_pot_mem_in;
-    logic [$clog2(WIDTH)-1:0] mem_addr;
-    logic memb_pot_mem_w_en;
-
-    // Output from the membrane potential memory
-    logic [DEPTH-1:0] memb_pot_mem_out;
-
-    logic [15:0][7:0] memb_pot_arr;
+    
 
     memory #(.WIDTH(WIDTH), .DEPTH(DEPTH)) memb_pot_mem (
         .data_in(memb_pot_arr[mem_addr[3:0]]),
