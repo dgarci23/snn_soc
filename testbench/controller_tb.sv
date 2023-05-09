@@ -2,9 +2,9 @@
 module controller_tb ();
 
     logic clock;
-    logic [3:0] event_addr;
-    logic event_received;
-    logic weight_w_en;
+    logic [3:0] pe_addr;
+    logic accum_en, spike_done;
+    logic [7:0] pe_out;
 
     controller uut (
         .*
@@ -15,11 +15,7 @@ module controller_tb ();
     initial begin
         $dumpfile("test.vcd");
         $dumpvars(0,uut);
-        clock = 0; #1;
-        event_addr = 4'd3; event_received = 1;
-        for (int i = 0; i < 20; i++) begin
-            $display("Current state: %d | weight_wen: %b | weight_cnt %d", uut.state, weight_w_en, uut.weight_cnt); #2;
-        end
+        clock = 0; #2;
         $finish;
     end
 

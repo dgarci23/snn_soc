@@ -1,5 +1,41 @@
 module controller
 
+    (
+        input logic clock,
+        output logic [3:0]  pe_addr,
+        output logic        accum_en,
+        output logic        spike_done,
+        input logic [7:0] pe_out
+    );
+
+    // Current and next state sequential logic
+
+    enum logic[2:0] {IDLE, LOAD, ACCUM, SPIKE, STORE, CLEANUP} state, next_state;
+
+    initial begin
+        state <= 0;
+    end
+
+    always_ff @(posedge clock ) begin
+        state <= next_state;
+    end
+
+    always_comb begin
+        pe_addr = 1;
+        spike_done = 0;
+        case (state)
+            IDLE: begin
+                accum_en = 1;
+                next_state = IDLE;
+            end
+        endcase
+                
+    end
+
+endmodule
+
+/*module controller
+
     ( 
         input  logic clock,
         input  logic [3:0] event_addr,
@@ -118,4 +154,4 @@ module controller
         state <= 0; neuron_cnt <= 0; spike_trigger_cnt <= 0;
     end
 
-endmodule
+endmodule*/

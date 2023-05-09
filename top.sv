@@ -1,4 +1,26 @@
-module top 
+module top
+
+    (
+        input logic clock
+    );
+
+    genvar i;
+    generate
+        for (i=0; i < 16; i++) begin
+            pe pe (
+                .pe_addr(4'h1),
+                .accum_en(1'b1),
+                .spike_done(),
+                .pe_out(),
+                .clock(clock)
+            );
+        end
+    endgenerate
+
+
+
+endmodule
+/*module top 
 
     (
         input logic clock,
@@ -111,4 +133,4 @@ module top
         .empty(snn_event_n)
     );
 
-endmodule
+endmodule*/
