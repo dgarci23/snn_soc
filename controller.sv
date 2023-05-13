@@ -5,6 +5,7 @@ module controller
         input  logic [3:0] event_addr,
         input  logic       event_received,
         input  logic [15:0] spike,
+        output logic        event_ack,
         output logic        accum_en,
         output logic        weight_w_en,
         output logic [7:0]  weight_addr,
@@ -61,6 +62,7 @@ module controller
         spike_trigger_cnt_rst = 0;
         accum_en = 0;
         spike_done = 1'b0;
+        event_ack = 0;
         next_state = IDLE;
         case (state)
             IDLE: begin
@@ -89,8 +91,10 @@ module controller
                 next_state = CLEANUP;
             end
             CLEANUP: begin
+                event_ack = 1;
                 next_state = IDLE;
                 if (spike != 16'h0000) begin
+                    event_ack = 0;
                     next_state = SPIKE;
                 end
             end
