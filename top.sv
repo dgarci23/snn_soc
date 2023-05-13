@@ -11,18 +11,29 @@ module top
     parameter DEPTH = 8;
 
     // Input to the weight memory
-    logic [$clog2(WIDTH)-1:0] weight_mem_waddr;
     logic weight_mem_w_en;
     logic [DEPTH-1:0] weight_mem_in;
 
     // Output from the weight memory
     logic [DEPTH-1:0] weight_mem_out;
 
+    // Input to the membrane potential memory
+    logic [DEPTH-1:0] memb_pot_mem_in;
+    logic [$clog2(WIDTH)-1:0] mem_addr;
+    logic memb_pot_mem_w_en;
+
+    // Output from the membrane potential memory
+    logic [DEPTH-1:0] memb_pot_mem_out;
+
+    // Membrane Potential Array
+    logic [15:0][7:0] memb_pot_arr;
+
     // From the sensors FIFO
     logic [3:0] sensor_event_addr = 4'd1;
     logic       sensor_event_received = 1'b1;
 
     // From the controller
+    logic memb_pot_pe_w_en;
     logic weight_pe_w_en;
     logic accum_en;
     logic [$clog2(WIDTH)-1:0] weight_ctr_raddr;
@@ -37,16 +48,29 @@ module top
     memory #(.WIDTH(WIDTH), .DEPTH(DEPTH)) weight_mem (
         .data_in(weight_mem_in),
         .data_out(weight_mem_out),
-        .raddr(weight_ctr_raddr),
-        .waddr(weight_mem_waddr),
+        .raddr(mem_addr),
+        .waddr(mem_addr),
         .w_en(weight_mem_w_en),
+        .clock(clock)
+    );
+
+    
+
+    memory #(.WIDTH(WIDTH), .DEPTH(DEPTH)) memb_pot_mem (
+        .data_in(memb_pot_arr[mem_addr[3:0]]),
+        .data_out(memb_pot_mem_out),
+        .raddr(mem_addr),
+        .waddr(mem_addr),
+        .w_en(memb_pot_mem_w_en),
         .clock(clock)
     );
 
     controller controller ( 
         .event_received(sensor_event_received),
         .weight_w_en(weight_pe_w_en),
-        .weight_addr(weight_ctr_raddr),
+        .memb_pot_w_en(memb_pot_pe_w_en),
+        .memb_pot_mem_w_en(memb_pot_mem_w_en),
+        .mem_addr(mem_addr),
         .event_addr(sensor_event_addr),
         .spike(spike),
         .accum_en(accum_en),
@@ -59,15 +83,20 @@ module top
         .y(spike_encoded)
     );
 
+    
+
     genvar i;
     generate
         for (i=0; i < 16; i++) begin
             pe pe (
                 .weight_in(weight_mem_out),
+                .memb_pot_in(memb_pot_mem_out),
                 .accum_en(accum_en),
-                .weight_w_en(weight_pe_w_en && (weight_ctr_raddr[3:0] == i)),
+                .weight_w_en(weight_pe_w_en && (mem_addr[3:0] == i)),
+                .memb_pot_w_en(memb_pot_pe_w_en && (mem_addr[3:0] == i)),
                 .spike(spike[i]),
                 .spike_done(spike_done&(spike_encoded==i)),
+                .memb_pot(memb_pot_arr[i]),
                 .clock(clock)
             );
         end

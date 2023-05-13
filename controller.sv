@@ -8,13 +8,15 @@ module controller
         output logic        event_ack,
         output logic        accum_en,
         output logic        weight_w_en,
-        output logic [7:0]  weight_addr,
+        output logic        memb_pot_w_en,
+        output logic        memb_pot_mem_w_en,
+        output logic [7:0]  mem_addr,
         output logic spike_done
     );
 
     // Current and next state sequential logic
 
-    enum logic[2:0] {IDLE, WEIGHT_LOAD, ACCUM, SPIKE, CLEANUP} state, next_state;
+    enum logic[2:0] {IDLE, LOAD, ACCUM, SPIKE, STORE, CLEANUP} state, next_state;
 
     always_ff @(posedge clock ) begin
         state <= next_state;
@@ -52,11 +54,13 @@ module controller
 
     // Address for weight in SRAM
 
-    assign weight_addr = {event_addr, neuron_cnt};
+    assign mem_addr = {event_addr, neuron_cnt};
 
     always_comb begin
         weight_w_en = 0;
+        memb_pot_w_en = 0;
         neuron_cnt_en = 0;
+        memb_pot_mem_w_en = 0;
         neuron_cnt_rst = 0;
         spike_trigger_cnt_en = 0;
         spike_trigger_cnt_rst = 0;
@@ -69,13 +73,14 @@ module controller
                 if (spike_trigger_cnt == 6'b11_1111) begin
                     next_state = SPIKE;
                 end else if (event_received) begin
-                    next_state = WEIGHT_LOAD;
+                    next_state = LOAD;
                 end
             end 
-            WEIGHT_LOAD: begin
+            LOAD: begin
                 neuron_cnt_en = 1;
-                next_state = WEIGHT_LOAD;
+                next_state = LOAD;
                 weight_w_en = 1;
+                memb_pot_w_en = 1;
                 if (neuron_cnt == 4'd15) begin
                     neuron_cnt_rst = 1;
                     next_state = ACCUM;
@@ -96,6 +101,15 @@ module controller
                 if (spike != 16'h0000) begin
                     event_ack = 0;
                     next_state = SPIKE;
+                end
+            end
+            STORE: begin
+                neuron_cnt_en = 1;
+                next_state = STORE;
+                memb_pot_mem_w_en = 1;
+                if (neuron_cnt == 4'd15) begin
+                    neuron_cnt_rst = 1;
+                    next_state = IDLE;
                 end
             end
             default: begin
